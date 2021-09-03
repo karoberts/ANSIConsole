@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
@@ -198,37 +199,24 @@ namespace ANSIConsole
         /// <returns></returns>
         public static ANSIString MapANSI(this string text, Func<string, ANSIString> generator) => ToANSI(string.Join("", text.Select(c => generator(c.ToString()))));
         
-        public static ANSIString Gradient(this string text, Color background, params Color[] colors) => text.MapANSI((c, i) =>
-        {
-            float percentage = (colors.Length - 1) * ((float)i / text.Length);
-            int colorPrevIndex = (int)percentage;
-            int colorNextIndex = (int)Math.Ceiling(percentage);
-            Color colorPrev = colors[colorPrevIndex];
-            Color colorNext = colors[colorNextIndex];
-            float ltrOffset = percentage - colorPrevIndex;
-            float rtlOffset = 1 - ltrOffset;
-                
-            int r = (byte)(rtlOffset * colorPrev.R + ltrOffset * colorNext.R);
-            int g = (byte)(rtlOffset * colorPrev.G + ltrOffset * colorNext.G);
-            int b = (byte)(rtlOffset * colorPrev.B + ltrOffset * colorNext.B);
-                
-            return c.ToString().Background(background).Color(r, g, b);
-        });
-        public static ANSIString GradientBackground(this string text, Color foreground, params Color[] colors) => text.MapANSI((c, i) =>
-        {
-            float percentage = (colors.Length - 1) * ((float)i / text.Length);
-            int colorPrevIndex = (int)percentage;
-            int colorNextIndex = (int)Math.Ceiling(percentage);
-            Color colorPrev = colors[colorPrevIndex];
-            Color colorNext = colors[colorNextIndex];
-            float ltrOffset = percentage - colorPrevIndex;
-            float rtlOffset = 1 - ltrOffset;
-                
-            int r = (byte)(rtlOffset * colorPrev.R + ltrOffset * colorNext.R);
-            int g = (byte)(rtlOffset * colorPrev.G + ltrOffset * colorNext.G);
-            int b = (byte)(rtlOffset * colorPrev.B + ltrOffset * colorNext.B);
-                
-            return c.ToString().Background(r, g, b).Color(foreground);
-        });
+        public static ANSIString Gradient(this string text, Color background, params Color[] colors)
+            => Gradient(text, background, GradientBlendMode.Perceptual, colors);
+
+        public static ANSIString GradientBackground(this string text, Color foreground, params Color[] colors)
+            => GradientBackground(text, foreground, GradientBlendMode.Perceptual, colors);
+
+        public static ANSIString Gradient(this string text, Color background, GradientBlendMode blendMode, params Color[] colors)
+            => new (string.Join("", ANSIGradient.AddGradient(text, background, colors, false, GetStepsFunc(blendMode))));
+
+        public static ANSIString GradientBackground(this string text, Color foreground, GradientBlendMode blendMode, params Color[] colors)
+            => new (string.Join("", ANSIGradient.AddGradient(text, foreground, colors, true, GetStepsFunc(blendMode))));
+
+        private static Func<Color, Color, int, IEnumerable<Color>> GetStepsFunc(GradientBlendMode blendMode)
+            => blendMode switch
+            {
+                GradientBlendMode.Perceptual => ANSIGradient.PerceptualSteps,
+                GradientBlendMode.Linear => ANSIGradient.LinearSteps,
+                _ => throw new NotSupportedException()
+            };
     }
 }
