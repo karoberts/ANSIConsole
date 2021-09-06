@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using ANSIConsole;
 
 namespace ExampleANSIConsole
@@ -32,6 +33,12 @@ namespace ExampleANSIConsole
             Console.WriteLine("This is a gradient".Gradient(ANSIString.FromConsoleColor(Console.BackgroundColor), Color.Yellow, Color.Red, Color.Blue, Color.Cyan));
             Console.WriteLine("This is a gradient".GradientBackground(Color.Black, Color.Yellow, Color.Red, Color.Blue, Color.Cyan));
             Console.WriteLine("Every second letter is yellow".MapANSI((c, i) => i % 2 == 0 ? c.Color(ConsoleColor.Yellow) : c.ToANSI()));
+
+            var s = new string(Enumerable.Repeat(' ', 100).ToArray());
+            var s2 = new string(Enumerable.Repeat('A', 100).ToArray());
+            Console.WriteLine("Red to Yellow to Lime Gradient:");
+            Console.WriteLine(s.GradientBackground(Color.Black, Color.Red, Color.Yellow, Color.Lime));
+            Console.WriteLine(s2.Gradient(Color.Black, Color.Red, Color.Yellow, Color.Lime));
         }
 
         static void AnsiCodes()
