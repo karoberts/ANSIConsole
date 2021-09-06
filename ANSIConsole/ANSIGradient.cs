@@ -116,11 +116,13 @@ namespace ANSIConsole
             int colorPrevIndex = 0;
             int colorNextIndex = 1;
 
+            // steps is the amount of characters for the first color pair (colors[0]..colors[1])
+            // each subsequent pairing gets one less step (so that we don't have the same unblended color at the end/start of the next section)
+            // remainder steps for when text length isn't divisible by colors count, we distribute one by one, starting with color pair 2
+             
             int steps = (int)Math.Ceiling((double)text.Length / (colors.Length - 1));
-            int stepsRemain = steps - 1;
             int stepsLeftOver = text.Length - steps - (steps - 1) * (colors.Length - 2);
-            List<int> stepsPerColor = new List<int>(colors.Length);
-            stepsPerColor.Add(steps);
+            var stepsPerColor = new List<int>(colors.Length) { steps };
             for (int i = 0; i < colors.Length - 1; i++)
             {
                 if (stepsLeftOver > 0)
